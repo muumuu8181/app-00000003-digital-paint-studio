@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Paint Studio - 高機能ペイントシステム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🎨</span>
+                    <span class="title-text">Digital Paint Studio</span>
+                    <span class="version">v1.0</span>
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-icon" id="undoBtn" title="元に戻す">↶</button>
+                    <button class="btn btn-icon" id="redoBtn" title="やり直し">↷</button>
+                    <button class="btn btn-icon" id="clearBtn" title="キャンバスクリア">🗑️</button>
+                    <button class="btn btn-primary" id="saveBtn">💾 保存</button>
+                    <button class="btn btn-secondary" id="loadBtn">📁 読込</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Left Toolbar -->
+            <aside class="toolbar-left">
+                <!-- Tool Selection -->
+                <div class="tool-section">
+                    <h3 class="section-title">🛠️ ツール</h3>
+                    <div class="tool-grid">
+                        <button class="tool-btn active" data-tool="brush" title="ブラシ">🖌️</button>
+                        <button class="tool-btn" data-tool="pencil" title="鉛筆">✏️</button>
+                        <button class="tool-btn" data-tool="eraser" title="消しゴム">🧽</button>
+                        <button class="tool-btn" data-tool="line" title="直線">📏</button>
+                        <button class="tool-btn" data-tool="rectangle" title="四角形">⬜</button>
+                        <button class="tool-btn" data-tool="circle" title="円">⭕</button>
+                        <button class="tool-btn" data-tool="spray" title="スプレー">💨</button>
+                        <button class="tool-btn" data-tool="bucket" title="塗りつぶし">🪣</button>
+                    </div>
+                </div>
+
+                <!-- Brush Settings -->
+                <div class="brush-section">
+                    <h3 class="section-title">🖌️ ブラシ設定</h3>
+                    
+                    <!-- Brush Size -->
+                    <div class="setting-group">
+                        <label class="setting-label">太さ</label>
+                        <input type="range" id="brushSize" min="1" max="50" value="5" class="setting-slider">
+                        <span class="setting-value" id="brushSizeValue">5px</span>
+                    </div>
+                    
+                    <!-- Brush Opacity -->
+                    <div class="setting-group">
+                        <label class="setting-label">透明度</label>
+                        <input type="range" id="brushOpacity" min="10" max="100" value="100" class="setting-slider">
+                        <span class="setting-value" id="brushOpacityValue">100%</span>
+                    </div>
+                    
+                    <!-- Brush Hardness -->
+                    <div class="setting-group">
+                        <label class="setting-label">硬さ</label>
+                        <input type="range" id="brushHardness" min="0" max="100" value="100" class="setting-slider">
+                        <span class="setting-value" id="brushHardnessValue">100%</span>
+                    </div>
+                    
+                    <!-- Brush Shape -->
+                    <div class="setting-group">
+                        <label class="setting-label">ブラシ形状</label>
+                        <div class="brush-shapes">
+                            <button class="shape-btn active" data-shape="round">●</button>
+                            <button class="shape-btn" data-shape="square">■</button>
+                            <button class="shape-btn" data-shape="triangle">▲</button>
+                            <button class="shape-btn" data-shape="star">★</button>
+                            <button class="shape-btn" data-shape="heart">♥</button>
+                            <button class="shape-btn" data-shape="cross">✚</button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Brush -->
+                    <div class="setting-group">
+                        <label class="setting-label">カスタムブラシ</label>
+                        <input type="file" id="customBrush" accept="image/*" class="file-input">
+                        <button class="btn btn-small" id="createBrushBtn">ブラシ作成</button>
+                    </div>
+                </div>
+
+                <!-- Layers -->
+                <div class="layers-section">
+                    <h3 class="section-title">📚 レイヤー</h3>
+                    <div class="layers-list" id="layersList">
+                        <div class="layer-item active" data-layer="0">
+                            <span class="layer-name">背景</span>
+                            <div class="layer-controls">
+                                <button class="layer-btn" title="表示/非表示">👁️</button>
+                                <button class="layer-btn" title="削除">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-small" id="addLayerBtn">+ レイヤー追加</button>
+                </div>
+            </aside>
+
+            <!-- Canvas Area -->
+            <section class="canvas-section">
+                <div class="canvas-container">
+                    <canvas id="paintCanvas" width="800" height="600"></canvas>
+                    <canvas id="overlayCanvas" width="800" height="600"></canvas>
+                    <div class="canvas-info">
+                        <span id="canvasSize">800 × 600</span>
+                        <span id="mousePos">X: 0, Y: 0</span>
+                        <span id="zoomLevel">100%</span>
+                    </div>
+                </div>
+                
+                <!-- Canvas Controls -->
+                <div class="canvas-controls">
+                    <button class="btn btn-icon" id="zoomInBtn" title="拡大">🔍+</button>
+                    <button class="btn btn-icon" id="zoomOutBtn" title="縮小">🔍-</button>
+                    <button class="btn btn-icon" id="fitToScreenBtn" title="画面に合わせる">📐</button>
+                    <div class="canvas-size-controls">
+                        <input type="number" id="canvasWidth" value="800" min="100" max="2000" class="size-input">
+                        <span>×</span>
+                        <input type="number" id="canvasHeight" value="600" min="100" max="2000" class="size-input">
+                        <button class="btn btn-small" id="resizeCanvasBtn">リサイズ</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel -->
+            <aside class="toolbar-right">
+                <!-- Color Picker -->
+                <div class="color-section">
+                    <h3 class="section-title">🎨 カラー</h3>
+                    
+                    <!-- Primary Color -->
+                    <div class="color-group">
+                        <label class="setting-label">メインカラー</label>
+                        <div class="color-picker-container">
+                            <input type="color" id="primaryColor" value="#000000" class="color-picker">
+                            <input type="text" id="primaryColorHex" value="#000000" class="color-hex">
+                        </div>
+                    </div>
+                    
+                    <!-- Secondary Color -->
+                    <div class="color-group">
+                        <label class="setting-label">サブカラー</label>
+                        <div class="color-picker-container">
+                            <input type="color" id="secondaryColor" value="#FFFFFF" class="color-picker">
+                            <input type="text" id="secondaryColorHex" value="#FFFFFF" class="color-hex">
+                        </div>
+                    </div>
+                    
+                    <!-- Color Swatches -->
+                    <div class="color-swatches">
+                        <div class="swatch" data-color="#FF0000" style="background: #FF0000;"></div>
+                        <div class="swatch" data-color="#00FF00" style="background: #00FF00;"></div>
+                        <div class="swatch" data-color="#0000FF" style="background: #0000FF;"></div>
+                        <div class="swatch" data-color="#FFFF00" style="background: #FFFF00;"></div>
+                        <div class="swatch" data-color="#FF00FF" style="background: #FF00FF;"></div>
+                        <div class="swatch" data-color="#00FFFF" style="background: #00FFFF;"></div>
+                        <div class="swatch" data-color="#FFA500" style="background: #FFA500;"></div>
+                        <div class="swatch" data-color="#800080" style="background: #800080;"></div>
+                        <div class="swatch" data-color="#FFC0CB" style="background: #FFC0CB;"></div>
+                        <div class="swatch" data-color="#A52A2A" style="background: #A52A2A;"></div>
+                        <div class="swatch" data-color="#808080" style="background: #808080;"></div>
+                        <div class="swatch" data-color="#000000" style="background: #000000;"></div>
+                    </div>
+                    
+                    <!-- Color Harmony -->
+                    <div class="color-harmony">
+                        <label class="setting-label">配色生成</label>
+                        <div class="harmony-buttons">
+                            <button class="btn btn-tiny" data-harmony="complementary">補色</button>
+                            <button class="btn btn-tiny" data-harmony="triadic">三色</button>
+                            <button class="btn btn-tiny" data-harmony="analogous">類似</button>
+                            <button class="btn btn-tiny" data-harmony="monochromatic">単色</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Effects -->
+                <div class="effects-section">
+                    <h3 class="section-title">✨ エフェクト</h3>
+                    
+                    <!-- Blur -->
+                    <div class="effect-group">
+                        <label class="setting-label">ぼかし</label>
+                        <input type="range" id="blurAmount" min="0" max="20" value="0" class="setting-slider">
+                        <span class="setting-value" id="blurValue">0px</span>
+                    </div>
+                    
+                    <!-- Brightness -->
+                    <div class="effect-group">
+                        <label class="setting-label">明度</label>
+                        <input type="range" id="brightnessAmount" min="0" max="200" value="100" class="setting-slider">
+                        <span class="setting-value" id="brightnessValue">100%</span>
+                    </div>
+                    
+                    <!-- Contrast -->
+                    <div class="effect-group">
+                        <label class="setting-label">コントラスト</label>
+                        <input type="range" id="contrastAmount" min="0" max="200" value="100" class="setting-slider">
+                        <span class="setting-value" id="contrastValue">100%</span>
+                    </div>
+                    
+                    <!-- Apply Effects -->
+                    <button class="btn btn-primary" id="applyEffectsBtn">エフェクト適用</button>
+                    <button class="btn btn-secondary" id="resetEffectsBtn">リセット</button>
+                </div>
+
+                <!-- Gallery -->
+                <div class="gallery-section">
+                    <h3 class="section-title">🖼️ ギャラリー</h3>
+                    <div class="gallery-grid" id="galleryGrid">
+                        <!-- Saved images will appear here -->
+                    </div>
+                    <button class="btn btn-small" id="clearGalleryBtn">ギャラリークリア</button>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Image Upload Modal -->
+        <div class="modal" id="uploadModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">画像アップロード</h3>
+                    <button class="modal-close" id="closeUploadModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">画像をドラッグ&ドロップ<br>または<br>クリックしてファイルを選択</div>
+                        <input type="file" id="imageUpload" accept="image/*" multiple class="upload-input">
+                    </div>
+                    <div class="upload-preview" id="uploadPreview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="confirmUploadBtn">アップロード</button>
+                    <button class="btn btn-secondary" id="cancelUploadBtn">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Options Modal -->
+        <div class="modal" id="saveModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">画像保存</h3>
+                    <button class="modal-close" id="closeSaveModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="save-options">
+                        <div class="option-group">
+                            <label class="setting-label">ファイル名</label>
+                            <input type="text" id="saveFileName" value="artwork" class="text-input">
+                        </div>
+                        <div class="option-group">
+                            <label class="setting-label">形式</label>
+                            <select id="saveFormat" class="select-input">
+                                <option value="png">PNG (高品質)</option>
+                                <option value="jpg">JPEG (軽量)</option>
+                                <option value="webp">WebP (最新)</option>
+                            </select>
+                        </div>
+                        <div class="option-group">
+                            <label class="setting-label">品質 (JPEG)</label>
+                            <input type="range" id="saveQuality" min="10" max="100" value="90" class="setting-slider">
+                            <span class="setting-value" id="qualityValue">90%</span>
+                        </div>
+                    </div>
+                    <div class="save-preview">
+                        <canvas id="savePreview" width="200" height="150"></canvas>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="downloadBtn">💾 ダウンロード</button>
+                    <button class="btn btn-secondary" id="saveToGalleryBtn">🖼️ ギャラリーに保存</button>
+                    <button class="btn btn-secondary" id="cancelSaveBtn">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">処理中...</div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notification-container" id="notificationContainer"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
